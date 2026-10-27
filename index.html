@@ -8,12 +8,12 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#f3f6fc;color:#17243b;font-family:Arial,sans-serif}
-header{background:#102b46;color:white;padding:28px 6%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px}
+header{background:#102b46;color:white;padding:26px 6%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
 header h1{margin:0;font-size:25px}
 header p{color:#c4d5e5}
 .badge{background:#087e80;padding:10px 15px;border-radius:25px}
-nav{display:flex;gap:8px;overflow-x:auto;padding:14px;background:white;position:sticky;top:0}
-button{border:0;padding:12px 16px;border-radius:9px;cursor:pointer;font-weight:bold}
+nav{display:flex;gap:7px;overflow-x:auto;padding:13px;background:white;position:sticky;top:0;z-index:2}
+button{border:0;padding:12px 15px;border-radius:9px;cursor:pointer;font-weight:bold}
 nav button{background:#edf2f8;color:#30415b;white-space:nowrap}
 nav button.active,.primary{background:#087e8b;color:white}
 .secondary{background:#edf2f8;color:#30415b}
@@ -23,7 +23,7 @@ main{max-width:1100px;margin:28px auto;padding:0 16px}
 h2{font-size:21px;margin-top:0}
 label{display:block;font-weight:bold;font-size:13px;margin:13px 0 7px}
 input,select,textarea{width:100%;padding:13px;border:1px solid #dbe2ed;border-radius:9px;font-size:15px;background:white}
-textarea{min-height:150px;resize:vertical}
+textarea{min-height:140px;resize:vertical}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
 .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
 .metric{background:white;padding:18px;border-radius:13px}
@@ -35,10 +35,19 @@ textarea{min-height:150px;resize:vertical}
 .hidden{display:none!important}
 .item{padding:14px 0;border-bottom:1px solid #edf0f5}
 footer{text-align:center;padding:25px;color:#8290a2;font-size:12px}
-@media(max-width:650px){.grid{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}header h1{font-size:21px}}
+#targetChoices{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+#targetChoices label{font-weight:normal}
+#targetChoices input{width:auto}
+@media(max-width:650px){
+.grid{grid-template-columns:1fr}
+.metrics{grid-template-columns:1fr 1fr}
+header h1{font-size:21px}
+#targetChoices{grid-template-columns:repeat(2,1fr)}
+}
 </style>
 </head>
 <body>
+
 <header>
 <div>
 <h1>🌐 AI Language Translation Studio</h1>
@@ -59,12 +68,14 @@ footer{text-align:center;padding:25px;color:#8290a2;font-size:12px}
 </nav>
 
 <main>
+
 <section id="translator" class="page">
 <div class="metrics">
 <div class="metric"><span>Total translations</span><strong id="total">0</strong></div>
 <div class="metric"><span>Favorites</span><strong id="favCount">0</strong></div>
 <div class="metric"><span>Words typed</span><strong id="wordCount">0</strong></div>
 </div>
+
 <div class="panel">
 <h2>🌐 Text Translator</h2>
 <div class="grid">
@@ -93,7 +104,7 @@ footer{text-align:center;padding:25px;color:#8290a2;font-size:12px}
 <section id="documents" class="page hidden">
 <div class="panel">
 <h2>📄 Document Translator</h2>
-<p class="muted">Upload a TXT file to extract its text and translate it.</p>
+<p class="muted">Upload a TXT file to extract and translate its text.</p>
 <input type="file" id="documentFile" accept=".txt,text/plain">
 <label>Document text</label>
 <textarea id="documentText" placeholder="Document text appears here..."></textarea>
@@ -134,7 +145,7 @@ footer{text-align:center;padding:25px;color:#8290a2;font-size:12px}
 <label>Enter text</label>
 <textarea id="multiText"></textarea>
 <label>Select target languages</label>
-<div id="targetChoices" class="grid"></div>
+<div id="targetChoices"></div>
 <button class="primary" id="multiTranslate">Translate into Selected Languages</button>
 <div id="multiResults"></div>
 </div>
@@ -143,7 +154,7 @@ footer{text-align:center;padding:25px;color:#8290a2;font-size:12px}
 <section id="writing" class="page hidden">
 <div class="panel">
 <h2>✍️ Smart Writing Assistant</h2>
-<p class="muted">Includes basic browser-based writing improvements, not a connected GenAI model.</p>
+<p class="muted">Basic browser-based writing improvements. This is not a connected GenAI model.</p>
 <label>Your text</label>
 <textarea id="writingInput"></textarea>
 <label>Writing style</label>
@@ -187,7 +198,396 @@ footer{text-align:center;padding:25px;color:#8290a2;font-size:12px}
 <div id="languageStats"></div>
 </div>
 </section>
+
 </main>
 <footer>AI Language Translation Studio · Browser-based application</footer>
 
 <script>
+const languages={
+"English":"en","Telugu":"te","Hindi":"hi","Tamil":"ta",
+"Kannada":"kn","Malayalam":"ml","French":"fr","German":"de",
+"Spanish":"es","Italian":"it","Portuguese":"pt","Russian":"ru",
+"Japanese":"ja","Chinese":"zh-CN","Korean":"ko","Arabic":"ar",
+"Bengali":"bn","Urdu":"ur","Marathi":"mr","Gujarati":"gu",
+"Punjabi":"pa","Dutch":"nl","Turkish":"tr","Thai":"th",
+"Vietnamese":"vi","Indonesian":"id","Swahili":"sw",
+"Ukrainian":"uk","Greek":"el"
+};
+
+const $=id=>document.getElementById(id);
+let history=[];
+
+try{
+history=JSON.parse(localStorage.getItem("translationHistory")||"[]");
+if(!Array.isArray(history))history=[];
+}catch(e){history=[];}
+
+function saveHistory(){
+try{
+localStorage.setItem("translationHistory",JSON.stringify(history));
+}catch(e){
+alert("Browser storage is full. Please remove some history.");
+}
+refresh();
+renderLists();
+}
+
+function refresh(){
+$("total").textContent=history.length;
+$("favCount").textContent=history.filter(x=>x.favorite).length;
+$("aTotal").textContent=history.length;
+$("aFav").textContent=history.filter(x=>x.favorite).length;
+$("wordCount").textContent=$("inputText").value.trim()
+? $("inputText").value.trim().split(/\s+/).length:0;
+$("aLang").textContent=new Set(history.map(x=>x.target)).size;
+}
+
+function fillSelect(id,selected){
+$(id).innerHTML=Object.keys(languages).map(name=>
+`<option value="${name}" ${name===selected?"selected":""}>${name}</option>`
+).join("");
+}
+
+[
+["source","English"],["target","Telugu"],
+["docSource","English"],["docTarget","Telugu"],
+["voiceSource","English"],["voiceTarget","Telugu"],
+["multiSource","English"]
+].forEach(([id,value])=>fillSelect(id,value));
+
+$("targetChoices").innerHTML=Object.keys(languages)
+.filter(n=>n!=="English")
+.map(n=>`<label><input type="checkbox" value="${n}"> ${n}</label>`)
+.join("");
+
+function escapeHTML(value){
+return String(value).replace(/[&<>"']/g,c=>({
+"&":"&amp;","<":"&lt;",">":"&gt;",
+'"':"&quot;","'":"&#39;"
+}[c]));
+}
+
+function addHistory(original,translated,source,target){
+history.unshift({
+id:Date.now()+Math.random(),
+original,translated,source,target,
+date:new Date().toLocaleString(),
+favorite:false
+});
+history=history.slice(0,100);
+saveHistory();
+}
+
+async function translateText(text,source,target){
+if(!text.trim())throw new Error("Please enter some text.");
+if(source===target)return text;
+
+const chunks=[];
+let remaining=text;
+
+while(remaining.length){
+let cut=Math.min(450,remaining.length);
+if(cut<remaining.length){
+const boundary=remaining.lastIndexOf(" ",cut);
+if(boundary>100)cut=boundary;
+}
+chunks.push(remaining.slice(0,cut));
+remaining=remaining.slice(cut).trimStart();
+}
+
+const translated=[];
+
+for(const chunk of chunks){
+const url=new URL("https://api.mymemory.translated.net/get");
+url.searchParams.set("q",chunk);
+url.searchParams.set("langpair",languages[source]+"|"+languages[target]);
+
+const response=await fetch(url);
+if(!response.ok)throw new Error("Translation service unavailable.");
+
+const data=await response.json();
+
+if(data.responseStatus&&data.responseStatus!==200){
+throw new Error(data.responseDetails||"Translation failed.");
+}
+translated.push(data.responseData.translatedText);
+}
+
+return translated.join(" ");
+}
+
+$("translateBtn").onclick=async()=>{
+const text=$("inputText").value;
+const source=$("source").value;
+const target=$("target").value;
+
+$("status").textContent="Translating...";
+$("translateBtn").disabled=true;
+
+try{
+const result=await translateText(text,source,target);
+$("result").textContent=result;
+$("status").textContent="Translation completed.";
+addHistory(text,result,source,target);
+}catch(error){
+$("status").textContent=error.message;
+}finally{
+$("translateBtn").disabled=false;
+}
+};
+
+$("inputText").addEventListener("input",refresh);
+
+$("clearBtn").onclick=()=>{
+$("inputText").value="";
+$("result").textContent="Your translated text will appear here.";
+$("status").textContent="";
+refresh();
+};
+
+$("detectBtn").onclick=()=>{
+const text=$("inputText").value.trim();
+if(!text){$("status").textContent="Enter text first.";return;}
+
+let detected="English";
+if(/[\u0C00-\u0C7F]/.test(text))detected="Telugu";
+else if(/[\u0900-\u097F]/.test(text))detected="Hindi";
+else if(/[\u0B80-\u0BFF]/.test(text))detected="Tamil";
+else if(/[\u0C80-\u0CFF]/.test(text))detected="Kannada";
+else if(/[\u0D00-\u0D7F]/.test(text))detected="Malayalam";
+else if(/[\u0600-\u06FF]/.test(text))detected="Arabic";
+else if(/[\u3040-\u30FF]/.test(text))detected="Japanese";
+else if(/[\u4E00-\u9FFF]/.test(text))detected="Chinese";
+else if(/[\uAC00-\uD7AF]/.test(text))detected="Korean";
+
+$("source").value=detected;
+$("status").textContent="Estimated language: "+detected;
+};
+
+async function copyText(text){
+if(!text)return;
+try{
+await navigator.clipboard.writeText(text);
+alert("Copied successfully!");
+}catch(e){
+alert("Copy is unavailable in this browser.");
+}
+}
+
+function downloadFile(name,content){
+const blob=new Blob([content],{type:"text/plain;charset=utf-8"});
+const url=URL.createObjectURL(blob);
+const a=document.createElement("a");
+a.href=url;
+a.download=name;
+a.click();
+URL.revokeObjectURL(url);
+}
+
+$("copyBtn").onclick=()=>$("result").textContent&&copyText($("result").textContent);
+
+$("speakBtn").onclick=()=>{
+const text=$("result").textContent;
+if(!text||!("speechSynthesis" in window)){
+alert("Speech is not supported in this browser.");return;
+}
+const speech=new SpeechSynthesisUtterance(text);
+speech.lang=languages[$("target").value];
+speechSynthesis.speak(speech);
+};
+
+$("favoriteBtn").onclick=()=>{
+if(!history.length){alert("Translate something first.");return;}
+history[0].favorite=!history[0].favorite;
+saveHistory();
+alert("Favorite status updated.");
+};
+
+$("downloadBtn").onclick=()=>{
+const text=$("result").textContent;
+if(!text||text==="Your translated text will appear here."){
+alert("Translate something first.");return;
+}
+downloadFile("translation.txt",text);
+};
+
+$("documentFile").onchange=async e=>{
+const file=e.target.files[0];
+if(!file)return;
+if(!file.name.toLowerCase().endsWith(".txt")){
+alert("This website currently supports TXT files only.");return;
+}
+$("documentText").value=await file.text();
+};
+
+$("docTranslate").onclick=async()=>{
+$("docResult").textContent="Translating...";
+try{
+const original=$("documentText").value;
+const translated=await translateText(original,$("docSource").value,$("docTarget").value);
+$("docResult").textContent=translated;
+addHistory(original,translated,$("docSource").value,$("docTarget").value);
+}catch(e){$("docResult").textContent=e.message;}
+};
+
+$("docDownload").onclick=()=>{
+const text=$("docResult").textContent;
+if(text&&text!=="No translation yet.")downloadFile("translated-document.txt",text);
+};
+
+$("recordBtn").onclick=()=>{
+const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!Recognition){
+$("voiceStatus").textContent="Speech recognition is not supported in this browser.";
+return;
+}
+const recognition=new Recognition();
+recognition.lang=languages[$("voiceSource").value];
+recognition.onstart=()=>$("voiceStatus").textContent="Listening...";
+recognition.onresult=e=>{
+$("voiceText").value=e.results[0][0].transcript;
+$("voiceStatus").textContent="Speech recognized.";
+};
+recognition.onerror=e=>$("voiceStatus").textContent="Microphone error: "+e.error;
+recognition.start();
+};
+
+$("voiceTranslate").onclick=async()=>{
+$("voiceResult").textContent="Translating...";
+try{
+const original=$("voiceText").value;
+const translated=await translateText(original,$("voiceSource").value,$("voiceTarget").value);
+$("voiceResult").textContent=translated;
+addHistory(original,translated,$("voiceSource").value,$("voiceTarget").value);
+}catch(e){$("voiceResult").textContent=e.message;}
+};
+
+$("voiceSpeak").onclick=()=>{
+if(!("speechSynthesis" in window)){
+alert("Speech is unavailable.");return;
+}
+const speech=new SpeechSynthesisUtterance($("voiceResult").textContent);
+speech.lang=languages[$("voiceTarget").value];
+speechSynthesis.speak(speech);
+};
+
+$("multiTranslate").onclick=async()=>{
+const text=$("multiText").value;
+const source=$("multiSource").value;
+const selected=[...document.querySelectorAll("#targetChoices input:checked")].map(x=>x.value);
+if(!text.trim()||!selected.length){
+alert("Enter text and select at least one target language.");return;
+}
+$("multiResults").innerHTML="<p>Translating...</p>";
+let output="";
+for(const target of selected){
+try{
+const result=await translateText(text,source,target);
+output+=`<div class="panel"><h3>${escapeHTML(target)}</h3><div class="result">${escapeHTML(result)}</div></div>`;
+addHistory(text,result,source,target);
+}catch(e){
+output+=`<div class="panel"><h3>${escapeHTML(target)}</h3><p>${escapeHTML(e.message)}</p></div>`;
+}
+}
+$("multiResults").innerHTML=output;
+};
+
+$("improveBtn").onclick=()=>{
+let text=$("writingInput").value.trim();
+if(!text){alert("Enter text first.");return;}
+const mode=$("writingMode").value;
+if(mode==="Professional"||mode==="Formal"){
+text=text.charAt(0).toUpperCase()+text.slice(1);
+if(!/[.!?]$/.test(text))text+=".";
+}else if(mode==="Simple"){
+text=text.replace(/\butilize\b/gi,"use").replace(/\bapproximately\b/gi,"about");
+}else if(mode==="Shorten"){
+text=text.split(/\s+/).slice(0,Math.max(1,Math.ceil(text.split(/\s+/).length*.7))).join(" ");
+}else if(mode==="Expand"){
+text=text+". This message can be developed further with additional details and examples.";
+}
+$("writingResult").textContent=text;
+};
+
+$("writingCopy").onclick=()=>copyText($("writingResult").textContent);
+
+function renderList(id,items,showFavorite){
+const el=$(id);
+if(!items.length){
+el.innerHTML='<p class="muted">Nothing here yet.</p>';
+return;
+}
+el.innerHTML=items.map(x=>`
+<div class="item">
+<strong>${escapeHTML(x.source)} → ${escapeHTML(x.target)}</strong>
+<p>${escapeHTML(x.original)}</p>
+<div class="result">${escapeHTML(x.translated)}</div>
+<p class="muted">${escapeHTML(x.date)}</p>
+<div class="actions">
+<button class="secondary" data-copy="${x.id}">Copy</button>
+${showFavorite?`<button class="secondary" data-favorite="${x.id}">${x.favorite?"Remove favorite":"Add favorite"}</button>`:""}
+<button class="danger" data-delete="${x.id}">Delete</button>
+</div>
+</div>`).join("");
+}
+
+function renderLists(){
+renderList("historyList",history,true);
+renderList("favoriteList",history.filter(x=>x.favorite),false);
+
+const counts={};
+history.forEach(x=>counts[x.target]=(counts[x.target]||0)+1);
+
+$("languageStats").innerHTML=Object.keys(counts).length
+?Object.entries(counts).map(([name,count])=>
+`<p><strong>${escapeHTML(name)}</strong> — ${count} translation(s)</p>`
+).join("")
+:'<p class="muted">No translation statistics yet.</p>';
+}
+
+document.addEventListener("click",async e=>{
+const button=e.target.closest("button");
+if(!button)return;
+
+if(button.dataset.copy){
+const item=history.find(x=>String(x.id)===button.dataset.copy);
+if(item)await copyText(item.translated);
+}
+
+if(button.dataset.favorite){
+const item=history.find(x=>String(x.id)===button.dataset.favorite);
+if(item){item.favorite=!item.favorite;saveHistory();}
+}
+
+if(button.dataset.delete){
+history=history.filter(x=>String(x.id)!==button.dataset.delete);
+saveHistory();
+}
+});
+
+$("clearHistory").onclick=()=>{
+if(confirm("Delete all translation history?")){
+history=[];
+saveHistory();
+}
+};
+
+$("nav").onclick=e=>{
+const button=e.target.closest("button[data-page]");
+if(!button)return;
+
+document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+button.classList.add("active");
+
+document.querySelectorAll(".page").forEach(p=>p.classList.add("hidden"));
+$(button.dataset.page).classList.remove("hidden");
+
+renderLists();
+refresh();
+};
+
+refresh();
+renderLists();
+</script>
+</body>
+</html>
