@@ -1,0 +1,193 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Language Translation Studio</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f3f6fc;color:#17243b;font-family:Arial,sans-serif}
+header{background:#102b46;color:white;padding:28px 6%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px}
+header h1{margin:0;font-size:25px}
+header p{color:#c4d5e5}
+.badge{background:#087e80;padding:10px 15px;border-radius:25px}
+nav{display:flex;gap:8px;overflow-x:auto;padding:14px;background:white;position:sticky;top:0}
+button{border:0;padding:12px 16px;border-radius:9px;cursor:pointer;font-weight:bold}
+nav button{background:#edf2f8;color:#30415b;white-space:nowrap}
+nav button.active,.primary{background:#087e8b;color:white}
+.secondary{background:#edf2f8;color:#30415b}
+.danger{background:#ffe9e9;color:#a33}
+main{max-width:1100px;margin:28px auto;padding:0 16px}
+.panel{background:white;padding:22px;border-radius:16px;margin-bottom:20px;box-shadow:0 5px 24px #0000000b}
+h2{font-size:21px;margin-top:0}
+label{display:block;font-weight:bold;font-size:13px;margin:13px 0 7px}
+input,select,textarea{width:100%;padding:13px;border:1px solid #dbe2ed;border-radius:9px;font-size:15px;background:white}
+textarea{min-height:150px;resize:vertical}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.metric{background:white;padding:18px;border-radius:13px}
+.metric span,.muted{color:#718096;font-size:13px}
+.metric strong{display:block;font-size:25px;color:#087e8b;margin-top:8px}
+.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+.actions button{flex:1}
+.result{background:#f0f7f8;padding:16px;border-radius:10px;min-height:75px;white-space:pre-wrap;overflow-wrap:anywhere}
+.hidden{display:none!important}
+.item{padding:14px 0;border-bottom:1px solid #edf0f5}
+footer{text-align:center;padding:25px;color:#8290a2;font-size:12px}
+@media(max-width:650px){.grid{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}header h1{font-size:21px}}
+</style>
+</head>
+<body>
+<header>
+<div>
+<h1>🌐 AI Language Translation Studio</h1>
+<p>Translate • Detect • Speak • Write • Explore</p>
+</div>
+<span class="badge">Translation Workspace</span>
+</header>
+
+<nav id="nav">
+<button class="active" data-page="translator">🌐 Translator</button>
+<button data-page="documents">📄 Documents</button>
+<button data-page="voice">🎤 Voice</button>
+<button data-page="multi">🌍 Multi Translate</button>
+<button data-page="writing">✍️ Smart Writing</button>
+<button data-page="history">🕘 History</button>
+<button data-page="favorites">⭐ Favorites</button>
+<button data-page="analytics">📊 Analytics</button>
+</nav>
+
+<main>
+<section id="translator" class="page">
+<div class="metrics">
+<div class="metric"><span>Total translations</span><strong id="total">0</strong></div>
+<div class="metric"><span>Favorites</span><strong id="favCount">0</strong></div>
+<div class="metric"><span>Words typed</span><strong id="wordCount">0</strong></div>
+</div>
+<div class="panel">
+<h2>🌐 Text Translator</h2>
+<div class="grid">
+<div><label>Source language</label><select id="source"></select></div>
+<div><label>Target language</label><select id="target"></select></div>
+</div>
+<label>Enter your text</label>
+<textarea id="inputText" placeholder="Type or paste your text here..."></textarea>
+<div class="actions">
+<button class="primary" id="translateBtn">🌐 Translate</button>
+<button class="secondary" id="detectBtn">🔍 Detect Language</button>
+<button class="secondary" id="clearBtn">Clear</button>
+</div>
+<p class="muted" id="status"></p>
+<h3>Translation Result</h3>
+<div class="result" id="result">Your translated text will appear here.</div>
+<div class="actions">
+<button class="secondary" id="copyBtn">Copy</button>
+<button class="secondary" id="speakBtn">🔊 Speak</button>
+<button class="secondary" id="favoriteBtn">⭐ Favorite</button>
+<button class="secondary" id="downloadBtn">Download</button>
+</div>
+</div>
+</section>
+
+<section id="documents" class="page hidden">
+<div class="panel">
+<h2>📄 Document Translator</h2>
+<p class="muted">Upload a TXT file to extract its text and translate it.</p>
+<input type="file" id="documentFile" accept=".txt,text/plain">
+<label>Document text</label>
+<textarea id="documentText" placeholder="Document text appears here..."></textarea>
+<div class="grid">
+<div><label>Source</label><select id="docSource"></select></div>
+<div><label>Target</label><select id="docTarget"></select></div>
+</div>
+<button class="primary" id="docTranslate">Translate Document</button>
+<h3>Result</h3>
+<div class="result" id="docResult">No translation yet.</div>
+<button class="secondary" id="docDownload">Download Result</button>
+</div>
+</section>
+
+<section id="voice" class="page hidden">
+<div class="panel">
+<h2>🎤 Voice Translator</h2>
+<p class="muted">Microphone permission and browser speech support are required.</p>
+<div class="grid">
+<div><label>Source</label><select id="voiceSource"></select></div>
+<div><label>Target</label><select id="voiceTarget"></select></div>
+</div>
+<button class="primary" id="recordBtn">🎤 Start Voice Input</button>
+<p class="muted" id="voiceStatus"></p>
+<label>Recognized speech</label>
+<textarea id="voiceText"></textarea>
+<button class="primary" id="voiceTranslate">Translate Speech</button>
+<h3>Translation</h3>
+<div class="result" id="voiceResult">Your translation appears here.</div>
+<button class="secondary" id="voiceSpeak">🔊 Speak Translation</button>
+</div>
+</section>
+
+<section id="multi" class="page hidden">
+<div class="panel">
+<h2>🌍 Multi-Language Translator</h2>
+<label>Source language</label><select id="multiSource"></select>
+<label>Enter text</label>
+<textarea id="multiText"></textarea>
+<label>Select target languages</label>
+<div id="targetChoices" class="grid"></div>
+<button class="primary" id="multiTranslate">Translate into Selected Languages</button>
+<div id="multiResults"></div>
+</div>
+</section>
+
+<section id="writing" class="page hidden">
+<div class="panel">
+<h2>✍️ Smart Writing Assistant</h2>
+<p class="muted">Includes basic browser-based writing improvements, not a connected GenAI model.</p>
+<label>Your text</label>
+<textarea id="writingInput"></textarea>
+<label>Writing style</label>
+<select id="writingMode">
+<option>Professional</option>
+<option>Formal</option>
+<option>Simple</option>
+<option>Shorten</option>
+<option>Expand</option>
+</select>
+<button class="primary" id="improveBtn">Improve Writing</button>
+<h3>Improved text</h3>
+<div class="result" id="writingResult"></div>
+<button class="secondary" id="writingCopy">Copy Text</button>
+</div>
+</section>
+
+<section id="history" class="page hidden">
+<div class="panel">
+<h2>🕘 Translation History</h2>
+<div id="historyList"></div>
+<button class="danger" id="clearHistory">Clear History</button>
+</div>
+</section>
+
+<section id="favorites" class="page hidden">
+<div class="panel">
+<h2>⭐ Favorite Translations</h2>
+<div id="favoriteList"></div>
+</div>
+</section>
+
+<section id="analytics" class="page hidden">
+<div class="panel">
+<h2>📊 Analytics Dashboard</h2>
+<div class="metrics">
+<div class="metric"><span>Translations</span><strong id="aTotal">0</strong></div>
+<div class="metric"><span>Favorites</span><strong id="aFav">0</strong></div>
+<div class="metric"><span>Languages used</span><strong id="aLang">0</strong></div>
+</div>
+<div id="languageStats"></div>
+</div>
+</section>
+</main>
+<footer>AI Language Translation Studio · Browser-based application</footer>
+
+<script>
