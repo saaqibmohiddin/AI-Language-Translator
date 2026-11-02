@@ -140,13 +140,6 @@ The application includes support for multiple languages, including:
 ---
 
 
-**A modern international communication design identity**
-
-<img src="https://img.shields.io/badge/DEEP%20OCEAN%20BLUE-102B46?style=for-the-badge" />
-<img src="https://img.shields.io/badge/GLOBAL%20TEAL-087E8B?style=for-the-badge" />
-<img src="https://img.shields.io/badge/AQUA%20CYAN-36D6C5?style=for-the-badge" />
-<img src="https://img.shields.io/badge/WARM%20GOLD-F4B860?style=for-the-badge" />
-
 </div>
 
 
