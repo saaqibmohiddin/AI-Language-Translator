@@ -139,11 +139,6 @@ The application includes support for multiple languages, including:
 
 ---
 
-## 🎨 DESIGN THEME
-
-<div align="center">
-
-# GLOBAL TEAL × DEEP OCEAN BLUE
 
 **A modern international communication design identity**
 
