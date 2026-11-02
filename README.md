@@ -155,16 +155,6 @@ The application includes support for multiple languages, including:
 
 </div>
 
-| Design Element | Colour | Hex Code |
-|---|---|---|
-| Primary Theme | Deep Ocean Blue | `#102B46` |
-| Secondary Theme | Global Teal | `#087E8B` |
-| Accent Colour | Aqua Cyan | `#36D6C5` |
-| Highlight Colour | Warm Gold | `#F4B860` |
-| Background | Cloud White | `#F3F6FC` |
-| Text Colour | Midnight Slate | `#17243B` |
-
-**Design Identity:** Modern • Multilingual • International • User-Friendly
 
 ---
 
