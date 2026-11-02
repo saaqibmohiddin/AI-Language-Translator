@@ -325,11 +325,6 @@ The browser-based interface uses browser local storage for translation history.
 
 ---
 
-## 👨‍💻 DEVELOPER
-
-<div align="center">
-
-### MOHAMMED SAAQIB MOHIDDIN
 
 **Computer Science & Engineering | Artificial Intelligence**
 
